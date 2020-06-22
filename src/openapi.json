@@ -1,0 +1,1411 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "title" : "JagoReact Job Board API",
+    "description" : "HTTP API untuk JagoReact Job Board Website",
+    "version" : "1.0.0"
+  },
+  "servers" : [ {
+    "url" : "/"
+  } ],
+  "tags" : [ {
+    "name" : "Visitor",
+    "description" : "Public HTTP API yang dapat diakses oleh pengguna tanpa perlu login"
+  }, {
+    "name" : "Employer",
+    "description" : "Private HTTP API yang hanya dapat diakses oleh employer yang sudah login"
+  }, {
+    "name" : "Admin",
+    "description" : "Private HTTP API yang hanya dapat diakses oleh admin yang sudah login"
+  } ],
+  "paths" : {
+    "/published-loker" : {
+      "get" : {
+        "tags" : [ "Visitor" ],
+        "summary" : "Dapatkan daftar loker aktif",
+        "description" : "Untuk mendapatkan semua daftar loker aktif terbaru",
+        "parameters" : [ {
+          "name" : "Limit",
+          "in" : "query",
+          "description" : "Batasi jumlah loker aktif yang didapatkan",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer"
+          },
+          "example" : 20
+        }, {
+          "name" : "LastEvaluatedSortKey",
+          "in" : "query",
+          "description" : "DynamoDB Query LastEvaluatedKey untuk atribut Sort Key dari GSI1 yang dapat digunakan untuk mendapatkan loker di halaman berikutnya (jika ada)",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "1588400242765"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Daftar loker aktif",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/published-loker/{Lokasi}" : {
+      "get" : {
+        "tags" : [ "Visitor" ],
+        "summary" : "Dapatkan daftar loker aktif dari sebuah lokasi",
+        "description" : "Dapatkan daftar loker aktif berdasarkan lokasi Remote atau Nama Kota di Indonesia",
+        "parameters" : [ {
+          "name" : "Lokasi",
+          "in" : "path",
+          "description" : "Lokasi loker bisa diisi dengan Remote atau Nama kota di Indonesia",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "Limit",
+          "in" : "query",
+          "description" : "Batasi jumlah loker aktif yang didapatkan",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer"
+          },
+          "example" : 20
+        }, {
+          "name" : "LastEvaluatedSortKey",
+          "in" : "query",
+          "description" : "DynamoDB Query LastEvaluatedKey untuk atribut Sort Key dari GSI2 yang dapat digunakan untuk mendapatkan loker di halaman berikutnya (jika ada)",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "1588400242765"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Daftar loker aktif",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/published-loker-detail/{Username}/{LokerId}" : {
+      "get" : {
+        "tags" : [ "Visitor" ],
+        "summary" : "Dapatkan detail sebuah loker",
+        "description" : "Dapatkan detail sebuah loker dan profil lengkap perusahaan",
+        "parameters" : [ {
+          "name" : "Username",
+          "in" : "path",
+          "description" : "Username pengguna (employer) yang membuat loker",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "jagoreact"
+        }, {
+          "name" : "LokerId",
+          "in" : "path",
+          "description" : "LokerId dari loker yang akan dilihat detailnya",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "f652e8a0-8c3c-11ea-bc55-0242ac130003"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Detail loker dan profil perusahaan",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_2"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        }
+      }
+    },
+    "/employer-dashboard" : {
+      "get" : {
+        "tags" : [ "Employer" ],
+        "summary" : "Dapatkan data dashboard employer",
+        "description" : "Dapatkan data profil perusahaan dan daftar loker dari employer yang terautentikasi",
+        "responses" : {
+          "200" : {
+            "description" : "Data dashboard untuk employer",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_3"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Tidak ada atau invalid Access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_401"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/profil" : {
+      "put" : {
+        "tags" : [ "Employer" ],
+        "summary" : "Buat atau update profil perusahaan",
+        "description" : "Buat atau update profil perusahaan untuk employer terautentikasi",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/body"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Updated",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_4"
+                }
+              }
+            }
+          },
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_201"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request"
+          },
+          "401" : {
+            "description" : "Tidak ada atau invalid Access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_401"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/loker" : {
+      "post" : {
+        "tags" : [ "Employer" ],
+        "summary" : "Buat loker baru",
+        "description" : "Buat loker baru untuk employer terautentikasi",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/body_1"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Loker berhasil ditambahkan",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_201_1"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request"
+          },
+          "401" : {
+            "description" : "Tidak ada atau invalid Access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_401"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/upload-logo-url" : {
+      "get" : {
+        "tags" : [ "Employer" ],
+        "summary" : "Dapatkan URL untuk upload logo",
+        "description" : "Dapatkan s3 presigned url untuk upload logo perusahaan",
+        "responses" : {
+          "200" : {
+            "description" : "Url berhasil didapatkan",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_5"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Tidak ada atau invalid Access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_401"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/loker/{LokerId}" : {
+      "delete" : {
+        "tags" : [ "Employer" ],
+        "summary" : "Delete loker",
+        "description" : "Delete loker berdasarkan LokerId",
+        "parameters" : [ {
+          "name" : "LokerId",
+          "in" : "path",
+          "description" : "Lokasi loker bisa diisi dengan Remote atau Nama kota di Indonesia",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "387cfa9c-8dda-11ea-bc55-0242ac130003"
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "401" : {
+            "description" : "Tidak ada atau invalid Access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_401"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Tidak berhak/diizinkan mengakses resource",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_403"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Employer" ],
+        "summary" : "Update loker",
+        "description" : "Update loker berdsarkan LokerId",
+        "parameters" : [ {
+          "name" : "LokerId",
+          "in" : "path",
+          "description" : "Lokasi loker bisa diisi dengan Remote atau Nama kota di Indonesia",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "387cfa9c-8dda-11ea-bc55-0242ac130003"
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/body_2"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Loker berhasil diperbarui",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_201_1"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request"
+          },
+          "401" : {
+            "description" : "Tidak ada atau invalid Access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_401"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Tidak berhak/diizinkan mengakses resource",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_403"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/submit-loker/{LokerId}" : {
+      "post" : {
+        "tags" : [ "Employer" ],
+        "summary" : "Submit loker",
+        "description" : "Submit Loker untuk di moderasi oleh admin",
+        "parameters" : [ {
+          "name" : "LokerId",
+          "in" : "path",
+          "description" : "Lokasi loker bisa diisi dengan Remote atau Nama kota di Indonesia",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "387cfa9c-8dda-11ea-bc55-0242ac130003"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Berhasil di submit",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_6"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Tidak ada atau invalid Access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_401"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Tidak berhak/diizinkan mengakses resource kalo bukan milik sendiri",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_403"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/admin-dashboard" : {
+      "get" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Dapatkan daftar loker yang butuh moderasi",
+        "description" : "Untuk mendapatkan semua daftar loker yang butuh dimoderasi oleh Admin",
+        "responses" : {
+          "200" : {
+            "description" : "Daftar loker aktif",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_7"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Tidak ada atau invalid Access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_401"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Tidak berhak/diizinkan mengakses resource kalo bukan admin",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_403"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/admin-loker/{Action}" : {
+      "post" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Untuk mem-publish atau me-reject sebuah loker",
+        "description" : "Digunakan untuk mempublikasikan atau menolak sebuah loker",
+        "parameters" : [ {
+          "name" : "Action",
+          "in" : "path",
+          "description" : "Action untuk sebuah loker bisa publish atau reject",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "publish", "reject" ]
+          },
+          "example" : "publish"
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/body_3"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Berhasil di publikasikan atau direject",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_8"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "inline_response_200_3_Items" : {
+        "type" : "object",
+        "properties" : {
+          "PK" : {
+            "type" : "string"
+          },
+          "SK" : {
+            "type" : "string"
+          },
+          "Username" : {
+            "type" : "string"
+          },
+          "Nama" : {
+            "type" : "string"
+          },
+          "Logo" : {
+            "type" : "string"
+          },
+          "Headquarter" : {
+            "type" : "string"
+          },
+          "Telp" : {
+            "type" : "string"
+          },
+          "Website" : {
+            "type" : "string"
+          },
+          "JumlahKaryawan" : {
+            "type" : "number"
+          },
+          "LokerId" : {
+            "type" : "string"
+          },
+          "Posisi" : {
+            "type" : "string"
+          },
+          "Deskripsi" : {
+            "type" : "string"
+          },
+          "Lokasi" : {
+            "type" : "string"
+          },
+          "Url" : {
+            "type" : "string"
+          },
+          "Status" : {
+            "type" : "string"
+          },
+          "Perusahaan" : {
+            "$ref" : "#/components/schemas/inline_response_200_3_Perusahaan"
+          },
+          "CreatedAt" : {
+            "type" : "number"
+          },
+          "UpdatedAt" : {
+            "type" : "number"
+          },
+          "GSI1PK" : {
+            "type" : "string"
+          },
+          "GSI1SK" : {
+            "type" : "string"
+          },
+          "GSI2PK" : {
+            "type" : "string"
+          },
+          "GSI2SK" : {
+            "type" : "string"
+          }
+        }
+      },
+      "inline_response_200_3_LastEvaluatedKey" : {
+        "type" : "object",
+        "properties" : {
+          "PK" : {
+            "type" : "string",
+            "example" : "USER#jagoreact"
+          },
+          "SK" : {
+            "type" : "string",
+            "example" : "LOKER#f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          }
+        }
+      },
+      "inline_response_201_ProfilPerusahaan" : {
+        "type" : "object",
+        "properties" : {
+          "PK" : {
+            "type" : "string",
+            "example" : "USER#jagoreact"
+          },
+          "SK" : {
+            "type" : "string",
+            "example" : "#PROFIL"
+          },
+          "Username" : {
+            "type" : "string",
+            "example" : "jagoreact"
+          },
+          "Nama" : {
+            "type" : "string",
+            "example" : "PT Jago React"
+          },
+          "Logo" : {
+            "type" : "string",
+            "example" : "https://jagoreact-job.amazonaws.com/jagoreact/logo.webp"
+          },
+          "Headquarter" : {
+            "type" : "string",
+            "example" : "Bandung"
+          },
+          "Telp" : {
+            "type" : "string",
+            "example" : "0891234567"
+          },
+          "Website" : {
+            "type" : "string",
+            "example" : "jagoreact.com"
+          },
+          "JumlahKaryawan" : {
+            "type" : "number",
+            "example" : 10
+          },
+          "CreatedAt" : {
+            "type" : "number",
+            "example" : 1588400242765
+          },
+          "UpdatedAt" : {
+            "type" : "number",
+            "example" : 1588400242765
+          }
+        }
+      },
+      "inline_response_200_4_ProfilPerusahaan" : {
+        "type" : "object",
+        "properties" : {
+          "PK" : {
+            "type" : "string",
+            "example" : "USER#jagoreact"
+          },
+          "SK" : {
+            "type" : "string",
+            "example" : "#PROFIL"
+          },
+          "Username" : {
+            "type" : "string",
+            "example" : "jagoreact"
+          },
+          "Nama" : {
+            "type" : "string",
+            "example" : "PT Jago React"
+          },
+          "Logo" : {
+            "type" : "string",
+            "example" : "https://jagoreact-job.amazonaws.com/jagoreact/logo.webp"
+          },
+          "Headquarter" : {
+            "type" : "string",
+            "example" : "Bandung"
+          },
+          "Telp" : {
+            "type" : "string",
+            "example" : "0891234567"
+          },
+          "Website" : {
+            "type" : "string",
+            "example" : "jagoreact.com"
+          },
+          "JumlahKaryawan" : {
+            "type" : "number",
+            "example" : 10
+          },
+          "CreatedAt" : {
+            "type" : "number",
+            "example" : 1588400242765
+          },
+          "UpdatedAt" : {
+            "type" : "number",
+            "example" : 1588650089613
+          }
+        }
+      },
+      "inline_response_200_LastEvaluatedKey" : {
+        "type" : "object",
+        "properties" : {
+          "GSI1PK" : {
+            "type" : "string",
+            "example" : "LOKER#PUBLISHED"
+          },
+          "GSI1SK" : {
+            "type" : "string",
+            "example" : "1588400242765"
+          }
+        }
+      },
+      "inline_response_200_3_Perusahaan" : {
+        "type" : "object",
+        "properties" : {
+          "Nama" : {
+            "type" : "string"
+          },
+          "Logo" : {
+            "type" : "string"
+          },
+          "UpdatedAt" : {
+            "type" : "number"
+          }
+        }
+      },
+      "body" : {
+        "type" : "object",
+        "properties" : {
+          "Nama" : {
+            "type" : "string",
+            "example" : "PT Jago React"
+          },
+          "Logo" : {
+            "type" : "string",
+            "example" : "https://jagoreact-job.amazonaws.com/jagoreact/logo.webp"
+          },
+          "Headquarter" : {
+            "type" : "string",
+            "example" : "Bandung"
+          },
+          "Telp" : {
+            "type" : "string",
+            "example" : "0891234567"
+          },
+          "Website" : {
+            "type" : "string",
+            "example" : "jagoreact.com"
+          },
+          "JumlahKaryawan" : {
+            "type" : "number",
+            "example" : 10
+          }
+        }
+      },
+      "inline_response_200_1_Items" : {
+        "type" : "object",
+        "properties" : {
+          "PK" : {
+            "type" : "string",
+            "example" : "USER#jagoreact"
+          },
+          "SK" : {
+            "type" : "string",
+            "example" : "LOKER#f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          },
+          "GSI2PK" : {
+            "type" : "string",
+            "example" : "LOKER#PUBLISHED#Remote"
+          },
+          "GSI2SK" : {
+            "type" : "string",
+            "example" : "1588400242765"
+          },
+          "Username" : {
+            "type" : "string",
+            "example" : "jagoreact"
+          },
+          "LokerId" : {
+            "type" : "string",
+            "example" : "f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          },
+          "Posisi" : {
+            "type" : "string",
+            "example" : "React Developer"
+          },
+          "Perusahaan" : {
+            "$ref" : "#/components/schemas/loker_Perusahaan"
+          }
+        }
+      },
+      "body_3" : {
+        "type" : "object",
+        "properties" : {
+          "Username" : {
+            "type" : "string",
+            "example" : "jagoreact"
+          },
+          "LokerId" : {
+            "type" : "string",
+            "example" : "387cfa9c-8dda-11ea-bc55-0242ac130003"
+          }
+        }
+      },
+      "body_1" : {
+        "type" : "object",
+        "properties" : {
+          "Posisi" : {
+            "type" : "string",
+            "example" : "Senior React Developer"
+          },
+          "Deskripsi" : {
+            "type" : "string",
+            "example" : "Deskripsi lowongan kerja"
+          },
+          "Lokasi" : {
+            "type" : "string",
+            "example" : "Remote"
+          },
+          "Url" : {
+            "type" : "string",
+            "example" : "https://jagoreact.com/job/s-react-dev"
+          },
+          "Perusahaan" : {
+            "$ref" : "#/components/schemas/loker_Perusahaan"
+          }
+        }
+      },
+      "body_2" : {
+        "type" : "object",
+        "properties" : {
+          "Posisi" : {
+            "type" : "string",
+            "example" : "Senior React Developer"
+          },
+          "Deskripsi" : {
+            "type" : "string",
+            "example" : "Deskripsi lowongan kerja v2"
+          },
+          "Lokasi" : {
+            "type" : "string",
+            "example" : "Remote"
+          },
+          "Url" : {
+            "type" : "string",
+            "example" : "https://jagoreact.com/job/s-react-dev"
+          },
+          "Perusahaan" : {
+            "$ref" : "#/components/schemas/loker_Perusahaan"
+          }
+        }
+      },
+      "inline_response_200_2_Loker" : {
+        "type" : "object",
+        "properties" : {
+          "PK" : {
+            "type" : "string",
+            "example" : "USER#jagoreact"
+          },
+          "SK" : {
+            "type" : "string",
+            "example" : "LOKER#f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          },
+          "Username" : {
+            "type" : "string",
+            "example" : "jagoreact"
+          },
+          "LokerId" : {
+            "type" : "string",
+            "example" : "f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          },
+          "Posisi" : {
+            "type" : "string",
+            "example" : "React Developer"
+          },
+          "Deskripsi" : {
+            "type" : "string",
+            "example" : "Deskripsi Lowongan Pekerjaan"
+          },
+          "Lokasi" : {
+            "type" : "string",
+            "example" : "Remote"
+          },
+          "Url" : {
+            "type" : "string",
+            "example" : "https://jagoreact.com/job/react-dev"
+          },
+          "Status" : {
+            "type" : "string",
+            "example" : "PUBLISHED"
+          },
+          "Perusahaan" : {
+            "$ref" : "#/components/schemas/loker_Perusahaan"
+          },
+          "CreatedAt" : {
+            "type" : "number",
+            "example" : 1588400242765
+          },
+          "UpdatedAt" : {
+            "type" : "number",
+            "example" : 1588400242765
+          },
+          "GSI1PK" : {
+            "type" : "string",
+            "example" : "LOKER#PUBLISHED"
+          },
+          "GSI1SK" : {
+            "type" : "string",
+            "example" : "1588400242765"
+          },
+          "GSI2PK" : {
+            "type" : "string",
+            "example" : "LOKER#PUBLISHED#Remote"
+          },
+          "GSI2SK" : {
+            "type" : "string",
+            "example" : "1588400242765"
+          }
+        }
+      },
+      "loker_Perusahaan" : {
+        "type" : "object",
+        "properties" : {
+          "Nama" : {
+            "type" : "string",
+            "example" : "PT Jago React"
+          },
+          "Logo" : {
+            "type" : "string",
+            "example" : "https://jagoreact-job.amazonaws.com/jagoreact/logo.webp"
+          },
+          "UpdatedAt" : {
+            "type" : "number",
+            "example" : 1588400242765
+          }
+        }
+      },
+      "inline_response_201" : {
+        "type" : "object",
+        "properties" : {
+          "ProfilPerusahaan" : {
+            "$ref" : "#/components/schemas/inline_response_201_ProfilPerusahaan"
+          }
+        }
+      },
+      "inline_response_200" : {
+        "type" : "object",
+        "properties" : {
+          "Count" : {
+            "type" : "number",
+            "example" : 1
+          },
+          "LastEvaluatedKey" : {
+            "$ref" : "#/components/schemas/inline_response_200_LastEvaluatedKey"
+          },
+          "Items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/inline_response_200_Items"
+            }
+          }
+        }
+      },
+      "inline_response_403" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "example" : "Forbidden"
+          }
+        }
+      },
+      "inline_response_200_Items" : {
+        "type" : "object",
+        "properties" : {
+          "PK" : {
+            "type" : "string",
+            "example" : "USER#jagoreact"
+          },
+          "SK" : {
+            "type" : "string",
+            "example" : "LOKER#f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          },
+          "GSI1PK" : {
+            "type" : "string",
+            "example" : "LOKER#PUBLISHED"
+          },
+          "GSI1SK" : {
+            "type" : "string",
+            "example" : "1588400242765"
+          },
+          "Username" : {
+            "type" : "string",
+            "example" : "jagoreact"
+          },
+          "LokerId" : {
+            "type" : "string",
+            "example" : "f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          },
+          "Posisi" : {
+            "type" : "string",
+            "example" : "React Developer"
+          },
+          "Lokasi" : {
+            "type" : "string",
+            "example" : "Remote"
+          },
+          "Perusahaan" : {
+            "$ref" : "#/components/schemas/loker_Perusahaan"
+          }
+        }
+      },
+      "inline_response_401" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "example" : "Unauthorized"
+          }
+        }
+      },
+      "inline_response_200_5" : {
+        "type" : "object",
+        "properties" : {
+          "UploadUrl" : {
+            "type" : "string",
+            "example" : "https://jagoreact-job.amazonaws.com/jagoreact/logo.webp?AWSAccessKeyId=6dxx2e47f8495754c099&Expires=1588737965&Signature=p%2FjZDH1X8Y%2BF1pxxxdVJVSgO8FA%3D"
+          }
+        }
+      },
+      "inline_response_200_6" : {
+        "type" : "object",
+        "properties" : {
+          "PK" : {
+            "type" : "string",
+            "example" : "USER#jagoreact"
+          },
+          "SK" : {
+            "type" : "string",
+            "example" : "LOKER#f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          },
+          "GSI1PK" : {
+            "type" : "string",
+            "example" : "LOKER#MODERATION"
+          },
+          "GSI1SK" : {
+            "type" : "string",
+            "example" : "1588400242765"
+          },
+          "Username" : {
+            "type" : "string",
+            "example" : "jagoreact"
+          },
+          "LokerId" : {
+            "type" : "string",
+            "example" : "f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          },
+          "Posisi" : {
+            "type" : "string",
+            "example" : "React Developer"
+          },
+          "Lokasi" : {
+            "type" : "string",
+            "example" : "Remote"
+          },
+          "Perusahaan" : {
+            "$ref" : "#/components/schemas/loker_Perusahaan"
+          }
+        }
+      },
+      "inline_response_200_7" : {
+        "type" : "object",
+        "properties" : {
+          "Count" : {
+            "type" : "number",
+            "example" : 1
+          },
+          "LastEvaluatedKey" : {
+            "$ref" : "#/components/schemas/inline_response_200_7_LastEvaluatedKey"
+          },
+          "Items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/inline_response_200_7_Items"
+            }
+          }
+        }
+      },
+      "inline_response_200_8" : {
+        "type" : "object",
+        "properties" : {
+          "PK" : {
+            "type" : "string",
+            "example" : "USER#jagoreact"
+          },
+          "SK" : {
+            "type" : "string",
+            "example" : "LOKER#f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          },
+          "GSI1PK" : {
+            "type" : "string",
+            "example" : "LOKER#PUBLISHED"
+          },
+          "GSI1SK" : {
+            "type" : "string",
+            "example" : "1588400242765"
+          },
+          "GSI2PK" : {
+            "type" : "string",
+            "example" : "LOKER#PUBLISHED#Remote"
+          },
+          "GSI2SK" : {
+            "type" : "string",
+            "example" : "1588400242765"
+          },
+          "Username" : {
+            "type" : "string",
+            "example" : "jagoreact"
+          },
+          "LokerId" : {
+            "type" : "string",
+            "example" : "f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          },
+          "Posisi" : {
+            "type" : "string",
+            "example" : "React Developer"
+          },
+          "Lokasi" : {
+            "type" : "string",
+            "example" : "Remote"
+          },
+          "Perusahaan" : {
+            "$ref" : "#/components/schemas/loker_Perusahaan"
+          }
+        }
+      },
+      "inline_response_200_1_LastEvaluatedKey" : {
+        "type" : "object",
+        "properties" : {
+          "GSI2PK" : {
+            "type" : "string",
+            "example" : "LOKER#PUBLISHED#Remote"
+          },
+          "GSI2SK" : {
+            "type" : "string",
+            "example" : "1588400242765"
+          }
+        }
+      },
+      "inline_response_200_7_LastEvaluatedKey" : {
+        "type" : "object",
+        "properties" : {
+          "GSI1PK" : {
+            "type" : "string",
+            "example" : "LOKER#MODERATION"
+          },
+          "GSI1SK" : {
+            "type" : "string",
+            "example" : "1588400242765"
+          }
+        }
+      },
+      "inline_response_200_1" : {
+        "type" : "object",
+        "properties" : {
+          "Count" : {
+            "type" : "number",
+            "example" : 1
+          },
+          "LastEvaluatedKey" : {
+            "$ref" : "#/components/schemas/inline_response_200_1_LastEvaluatedKey"
+          },
+          "Items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/inline_response_200_1_Items"
+            }
+          }
+        }
+      },
+      "inline_response_200_2" : {
+        "type" : "object",
+        "properties" : {
+          "ProfilPerusahaan" : {
+            "$ref" : "#/components/schemas/inline_response_201_ProfilPerusahaan"
+          },
+          "Loker" : {
+            "$ref" : "#/components/schemas/inline_response_200_2_Loker"
+          }
+        }
+      },
+      "inline_response_201_1" : {
+        "type" : "object",
+        "properties" : {
+          "PK" : {
+            "type" : "string",
+            "example" : "USER#jagoreact"
+          },
+          "SK" : {
+            "type" : "string",
+            "example" : "LOKER#387cfa9c-8dda-11ea-bc55-0242ac130003"
+          },
+          "Username" : {
+            "type" : "string",
+            "example" : "jagoreact"
+          },
+          "LokerId" : {
+            "type" : "string",
+            "example" : "387cfa9c-8dda-11ea-bc55-0242ac130003"
+          },
+          "Posisi" : {
+            "type" : "string",
+            "example" : "Senior React Developer"
+          },
+          "Deskripsi" : {
+            "type" : "string",
+            "example" : "Deskripsi lowongan kerja"
+          },
+          "Lokasi" : {
+            "type" : "string",
+            "example" : "Remote"
+          },
+          "Url" : {
+            "type" : "string",
+            "example" : "https://jagoreact.com/job/s-react-dev"
+          },
+          "Perusahaan" : {
+            "$ref" : "#/components/schemas/loker_Perusahaan"
+          },
+          "CreatedAt" : {
+            "type" : "number",
+            "example" : 1588400242765
+          },
+          "UpdatedAt" : {
+            "type" : "number",
+            "example" : 1588400242765
+          }
+        }
+      },
+      "inline_response_200_3" : {
+        "type" : "object",
+        "properties" : {
+          "Count" : {
+            "type" : "number",
+            "example" : 2
+          },
+          "LastEvaluatedKey" : {
+            "$ref" : "#/components/schemas/inline_response_200_3_LastEvaluatedKey"
+          },
+          "Items" : {
+            "type" : "array",
+            "example" : [ {
+              "PK" : "USER#jagoreact",
+              "SK" : "#PROFIL",
+              "Username" : "jagoreact",
+              "Nama" : "PT Jago React",
+              "Logo" : "https://jagoreact-job.amazonaws.com/jagoreact/logo.webp",
+              "Headquarter" : "Bandung",
+              "Telp" : "0891234567",
+              "Website" : "jagoreact.com",
+              "JumlahKaryawan" : 10,
+              "CreatedAt" : 1588400242765,
+              "UpdatedAt" : 1588400242765
+            }, {
+              "PK" : "USER#jagoreact",
+              "SK" : "LOKER#f652e8a0-8c3c-11ea-bc55-0242ac130003",
+              "Username" : "jagoreact",
+              "LokerId" : "f652e8a0-8c3c-11ea-bc55-0242ac130003",
+              "Posisi" : "React Developer",
+              "Deskripsi" : "Deskripsi Lowongan Pekerjaan",
+              "Lokasi" : "Remote",
+              "Url" : "https://jagoreact.com/job/react-dev",
+              "Status" : "PUBLISHED",
+              "Perusahaan" : {
+                "Nama" : "PT Jago React",
+                "Logo" : "https://jagoreact-job.amazonaws.com/jagoreact/logo.webp",
+                "UpdatedAt" : 1588400242765
+              },
+              "CreatedAt" : 1588400242765,
+              "UpdatedAt" : 1588400242765,
+              "GSI1PK" : "LOKER#PUBLISHED",
+              "GSI1SK" : "1588400242765",
+              "GSI2PK" : "LOKER#PUBLISHED#Remote",
+              "GSI2SK" : "1588400242765"
+            } ],
+            "items" : {
+              "$ref" : "#/components/schemas/inline_response_200_3_Items"
+            }
+          }
+        }
+      },
+      "inline_response_200_4" : {
+        "type" : "object",
+        "properties" : {
+          "ProfilPerusahaan" : {
+            "$ref" : "#/components/schemas/inline_response_200_4_ProfilPerusahaan"
+          }
+        }
+      },
+      "inline_response_200_7_Items" : {
+        "type" : "object",
+        "properties" : {
+          "PK" : {
+            "type" : "string",
+            "example" : "USER#jagoreact"
+          },
+          "SK" : {
+            "type" : "string",
+            "example" : "LOKER#f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          },
+          "GSI1PK" : {
+            "type" : "string",
+            "example" : "LOKER#MODERATION"
+          },
+          "GSI1SK" : {
+            "type" : "string",
+            "example" : "1588400242765"
+          },
+          "Username" : {
+            "type" : "string",
+            "example" : "jagoreact"
+          },
+          "LokerId" : {
+            "type" : "string",
+            "example" : "f652e8a0-8c3c-11ea-bc55-0242ac130003"
+          },
+          "Posisi" : {
+            "type" : "string",
+            "example" : "React Developer"
+          },
+          "Lokasi" : {
+            "type" : "string",
+            "example" : "Remote"
+          },
+          "Perusahaan" : {
+            "$ref" : "#/components/schemas/loker_Perusahaan"
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      }
+    }
+  }
+}
