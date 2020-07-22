@@ -163,6 +163,29 @@
         "tags" : [ "Employer" ],
         "summary" : "Dapatkan data dashboard employer",
         "description" : "Dapatkan data profil perusahaan dan daftar loker dari employer yang terautentikasi",
+        "parameters" : [ {
+          "name" : "Limit",
+          "in" : "query",
+          "description" : "Batasi jumlah item yang didapatkan",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer"
+          },
+          "example" : 20
+        }, {
+          "name" : "LastEvaluatedSortKey",
+          "in" : "query",
+          "description" : "DynamoDB Query LastEvaluatedKey untuk atribut Sort Key yang dapat digunakan untuk mendapatkan loker di halaman berikutnya (jika ada)",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "LOKER#f652e8a0-8c3c-11ea-bc55-0242ac130003"
+        } ],
         "responses" : {
           "200" : {
             "description" : "Data dashboard untuk employer",
@@ -322,14 +345,14 @@
       }
     },
     "/loker/{LokerId}" : {
-      "delete" : {
+      "get" : {
         "tags" : [ "Employer" ],
-        "summary" : "Delete loker",
-        "description" : "Delete loker berdasarkan LokerId",
+        "summary" : "Get Loker",
+        "description" : "Dapatkan data loker berdasarkan LokerId",
         "parameters" : [ {
           "name" : "LokerId",
           "in" : "path",
-          "description" : "Lokasi loker bisa diisi dengan Remote atau Nama kota di Indonesia",
+          "description" : "LokerId dari loker yang akan dilihat detailnya",
           "required" : true,
           "style" : "simple",
           "explode" : false,
@@ -339,8 +362,15 @@
           "example" : "387cfa9c-8dda-11ea-bc55-0242ac130003"
         } ],
         "responses" : {
-          "204" : {
-            "description" : "No Content"
+          "200" : {
+            "description" : "Loker berhasil diperbarui",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_201_1"
+                }
+              }
+            }
           },
           "401" : {
             "description" : "Tidak ada atau invalid Access token",
@@ -352,29 +382,22 @@
               }
             }
           },
-          "403" : {
-            "description" : "Tidak berhak/diizinkan mengakses resource",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/inline_response_403"
-                }
-              }
-            }
+          "404" : {
+            "description" : "Not Found"
           }
         },
         "security" : [ {
           "bearerAuth" : [ ]
         } ]
       },
-      "patch" : {
+      "put" : {
         "tags" : [ "Employer" ],
         "summary" : "Update loker",
         "description" : "Update loker berdsarkan LokerId",
         "parameters" : [ {
           "name" : "LokerId",
           "in" : "path",
-          "description" : "Lokasi loker bisa diisi dengan Remote atau Nama kota di Indonesia",
+          "description" : "LokerId dari loker yang akan diupdate",
           "required" : true,
           "style" : "simple",
           "explode" : false,
@@ -431,6 +454,51 @@
         "security" : [ {
           "bearerAuth" : [ ]
         } ]
+      },
+      "delete" : {
+        "tags" : [ "Employer" ],
+        "summary" : "Delete loker",
+        "description" : "Delete loker berdasarkan LokerId",
+        "parameters" : [ {
+          "name" : "LokerId",
+          "in" : "path",
+          "description" : "LokerId dari loker yang akan dilihat delete",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "387cfa9c-8dda-11ea-bc55-0242ac130003"
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "401" : {
+            "description" : "Tidak ada atau invalid Access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_401"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Tidak berhak/diizinkan mengakses resource",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_403"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/submit-loker/{LokerId}" : {
@@ -441,7 +509,7 @@
         "parameters" : [ {
           "name" : "LokerId",
           "in" : "path",
-          "description" : "Lokasi loker bisa diisi dengan Remote atau Nama kota di Indonesia",
+          "description" : "LokerId dari loker yang akan disubmit",
           "required" : true,
           "style" : "simple",
           "explode" : false,
@@ -492,6 +560,29 @@
         "tags" : [ "Admin" ],
         "summary" : "Dapatkan daftar loker yang butuh moderasi",
         "description" : "Untuk mendapatkan semua daftar loker yang butuh dimoderasi oleh Admin",
+        "parameters" : [ {
+          "name" : "Limit",
+          "in" : "query",
+          "description" : "Batasi jumlah item yang didapatkan",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer"
+          },
+          "example" : 20
+        }, {
+          "name" : "LastEvaluatedSortKey",
+          "in" : "query",
+          "description" : "DynamoDB Query LastEvaluatedKey untuk atribut Sort Key yang dapat digunakan untuk mendapatkan loker di halaman berikutnya (jika ada)",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "LOKER#f652e8a0-8c3c-11ea-bc55-0242ac130003"
+        } ],
         "responses" : {
           "200" : {
             "description" : "Daftar loker aktif",
