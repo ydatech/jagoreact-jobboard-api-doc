@@ -10,7 +10,7 @@
     "react": "16.12.0",
     "react-dom": "16.12.0",
     "react-scripts": "3.0.1",
-    "redoc": "2.0.0-rc.28",
+    "redoc": "2.4.0",
     "styled-components": "5.1.0"
   },
   "devDependencies": {
